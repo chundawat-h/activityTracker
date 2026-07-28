@@ -1,0 +1,38 @@
+services:
+  # Long-running background worker: runs the scheduler in-process, no
+  # public HTTP surface needed since this pipeline doesn't serve requests
+  # (the FUTURE READY section's "REST API"/"Admin panel" items would add
+  # a `web` service alongside this one later).
+  - type: worker
+    name: chalo-activity-tracker
+    runtime: docker
+    plan: starter
+    dockerfilePath: ./Dockerfile
+    autoDeploy: true
+    envVars:
+      - key: DATABASE_URL
+        fromDatabase:
+          name: chalo-activity-tracker-db
+          property: connectionString
+      - key: COMPOSIO_API_KEY
+        sync: false
+      - key: COMPOSIO_CONNECTED_ACCOUNT_ID
+        sync: false
+      - key: NOTIFICATION_EMAIL_TO
+        sync: false
+      - key: NOTIFICATION_EMAIL_FROM
+        sync: false
+      - key: SCRAPE_INTERVAL_MINUTES
+        value: "60"
+      - key: RUN_SCRAPE_ON_STARTUP
+        value: "true"
+      - key: LOG_LEVEL
+        value: "INFO"
+      - key: KEYWORDS_CSV_PATH
+        value: "/app/keywords.csv"
+
+databases:
+  - name: chalo-activity-tracker-db
+    plan: starter
+    databaseName: activity_tracker
+    user: activity_tracker
