@@ -14,9 +14,8 @@ import time
 from abc import ABC, abstractmethod
 from dataclasses import dataclass
 
+import cloudscraper
 import requests
-from requests.adapters import HTTPAdapter
-from urllib3.util.retry import Retry
 
 from backend.config.logging_config import get_logger
 from backend.config.settings import settings
@@ -45,35 +44,28 @@ class BaseScraper(ABC):
     source_name: str = "unknown"
 
     def __init__(self) -> None:
-        self.session = self._build_session()
-
-    def _build_session(self) -> requests.Session:
-        session = requests.Session()
-        session.headers.update(
+        # cloudscraper mimics a real browser TLS fingerprint, bypassing
+        # Cloudflare / WAF bot-detection (403s, JS challenges, etc.).
+        # It is a drop-in replacement for requests.Session.
+        self.session: requests.Session = cloudscraper.create_scraper(
+            browser={"browser": "chrome", "platform": "windows", "mobile": False}
+        )
+        self.session.headers.update(
             {
                 "User-Agent": settings.request_user_agent,
                 "Accept": "text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8",
                 "Accept-Language": "en-US,en;q=0.9",
             }
         )
-        retry = Retry(
-            total=3,
-            backoff_factor=1.5,
-            status_forcelist=[429, 500, 502, 503, 504],
-            allowed_methods=["GET"],
-        )
-        adapter = HTTPAdapter(max_retries=retry)
-        session.mount("https://", adapter)
-        session.mount("http://", adapter)
-        return session
 
-    def fetch_html(self, url: str, *, extra_headers: dict | None = None) -> str:
+    def fetch_html(self, url: str, *, extra_headers: dict | None = None, verify: bool = True) -> str:
         """Fetch a URL and return raw HTML, raising ScraperError on failure."""
         try:
             response = self.session.get(
                 url,
                 timeout=settings.request_timeout_seconds,
                 headers=extra_headers or {},
+                verify=verify,
             )
             response.raise_for_status()
             return response.text

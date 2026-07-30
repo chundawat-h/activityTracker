@@ -1,0 +1,204 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Activity Tracker — Chalo Dashboard</title>
+  <meta name="description" content="Monitor government activity and bureaucracy news for business leads. Add people to track and receive email alerts automatically." />
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="/static/styles.css" />
+</head>
+<body>
+
+  <!-- Background orbs -->
+  <div class="bg-orb orb-1"></div>
+  <div class="bg-orb orb-2"></div>
+  <div class="bg-orb orb-3"></div>
+
+  <!-- Header -->
+  <header class="header">
+    <div class="header-inner">
+      <div class="logo">
+        <div class="logo-icon">
+          <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+            <circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/>
+          </svg>
+        </div>
+        <span class="logo-text">ActivityTracker</span>
+        <span class="logo-badge">by Chalo</span>
+      </div>
+      <div class="header-actions">
+        <button class="btn btn-ghost" id="run-pipeline-btn">
+          <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+            <polygon points="5 3 19 12 5 21 5 3"/>
+          </svg>
+          Run Now
+        </button>
+        <div class="status-badge" id="pipeline-status">
+          <span class="status-dot"></span>
+          <span class="status-text">Idle</span>
+        </div>
+      </div>
+    </div>
+  </header>
+
+  <!-- Main -->
+  <main class="main">
+
+    <!-- Hero Stats -->
+    <section class="stats-row" id="stats-row">
+      <div class="stat-card">
+        <div class="stat-icon stat-icon--blue">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>
+        </div>
+        <div class="stat-body">
+          <div class="stat-value" id="stat-keywords">—</div>
+          <div class="stat-label">People Tracked</div>
+        </div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-icon stat-icon--purple">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"/><polyline points="22,6 12,13 2,6"/></svg>
+        </div>
+        <div class="stat-body">
+          <div class="stat-value" id="stat-email">—</div>
+          <div class="stat-label">Alert Email</div>
+        </div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-icon stat-icon--green">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><polyline points="22 12 18 12 15 21 9 3 6 12 2 12"/></svg>
+        </div>
+        <div class="stat-body">
+          <div class="stat-value" id="stat-last-run">Never</div>
+          <div class="stat-label">Last Pipeline Run</div>
+        </div>
+      </div>
+    </section>
+
+    <!-- Grid layout -->
+    <div class="grid">
+
+      <!-- Left: Keyword management -->
+      <section class="card card--tall" id="keywords-section">
+        <div class="card-header">
+          <h2 class="card-title">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><line x1="23" y1="11" x2="17" y2="11"/><line x1="20" y1="8" x2="20" y2="14"/></svg>
+            Tracked People
+          </h2>
+          <span class="badge" id="kw-count-badge">0</span>
+        </div>
+
+        <!-- Add keyword form -->
+        <form class="add-form" id="add-kw-form">
+          <div class="input-row">
+            <input
+              id="kw-input"
+              class="input"
+              type="text"
+              placeholder="Person / entity name…"
+              required
+              autocomplete="off"
+            />
+            <input
+              id="cat-input"
+              class="input input--sm"
+              type="text"
+              placeholder="Category (optional)"
+              autocomplete="off"
+            />
+            <button class="btn btn-primary" type="submit" id="add-kw-btn">
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+              Add
+            </button>
+          </div>
+          <div class="form-hint">e.g. "Rajesh Kumar", category "IAS Officer"</div>
+        </form>
+
+        <!-- Search -->
+        <div class="search-row">
+          <svg class="search-icon" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
+          <input id="kw-search" class="input input--search" type="text" placeholder="Filter keywords…" autocomplete="off" />
+        </div>
+
+        <!-- Keyword list -->
+        <div class="kw-list" id="kw-list">
+          <div class="loading-state">
+            <div class="spinner"></div>
+            <span>Loading keywords…</span>
+          </div>
+        </div>
+      </section>
+
+      <!-- Right: Settings + Info -->
+      <div class="right-col">
+
+        <!-- Email settings -->
+        <section class="card" id="email-section">
+          <div class="card-header">
+            <h2 class="card-title">
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"/><polyline points="22,6 12,13 2,6"/></svg>
+              Alert Email
+            </h2>
+          </div>
+          <p class="card-desc">Receive an email when a tracked person appears in the news.</p>
+          <form class="add-form" id="email-form">
+            <div class="input-row">
+              <input
+                id="email-input"
+                class="input"
+                type="email"
+                placeholder="your@email.com"
+                required
+              />
+              <button class="btn btn-primary" type="submit" id="save-email-btn">Save</button>
+            </div>
+          </form>
+        </section>
+
+        <!-- How it works -->
+        <section class="card card--info">
+          <div class="card-header">
+            <h2 class="card-title">
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>
+              How it works
+            </h2>
+          </div>
+          <ol class="how-list">
+            <li><strong>Add people</strong> you want to track (IAS Officers, STU bodies, Ministers…)</li>
+            <li><strong>Set your email</strong> above to receive alerts</li>
+            <li>The pipeline <strong>automatically scrapes</strong> government news sites every hour</li>
+            <li>When a match is found, it stores the article and <strong>emails you</strong></li>
+          </ol>
+        </section>
+
+        <!-- Verification tip -->
+        <section class="card card--tip">
+          <div class="card-header">
+            <h2 class="card-title">
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="20 6 9 17 4 12"/></svg>
+              Verify it's working
+            </h2>
+          </div>
+          <p class="card-desc">No email yet? That's normal if no tracked person appeared in recent news. You can:</p>
+          <ul class="tip-list">
+            <li>Click <strong>Run Now</strong> in the top bar and check the log output</li>
+            <li>Open <code>activity_tracker.db</code> in DB Browser for SQLite to inspect the <code>articles</code> table</li>
+            <li>Rows with <code>has_keyword_match = 1</code> = a match was found</li>
+            <li>Rows with <code>email_sent = 1</code> = alert was emailed</li>
+          </ul>
+        </section>
+
+      </div>
+    </div>
+
+  </main>
+
+  <!-- Toast -->
+  <div class="toast" id="toast" role="alert" aria-live="polite"></div>
+
+  <script src="/static/app.js"></script>
+</body>
+</html>

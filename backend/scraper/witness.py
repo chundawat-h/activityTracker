@@ -28,7 +28,10 @@ things follow from that, both handled below:
 from __future__ import annotations
 
 import re
+import urllib3
 from urllib.parse import urljoin
+
+urllib3.disable_warnings(urllib3.exceptions.InsecureRequestWarning)
 
 from bs4 import BeautifulSoup, Tag
 
@@ -79,7 +82,7 @@ class WitnessInTheCorridorsScraper(BaseScraper):
     source_name = "witnessinthecorridors"
 
     def scrape_articles(self) -> list[ScrapedArticle]:
-        html = self.fetch_html(LISTING_URL)
+        html = self.fetch_html(LISTING_URL, verify=False)
         soup = BeautifulSoup(html, "html.parser")
 
         links = self._parse_listing(soup)
@@ -140,7 +143,7 @@ class WitnessInTheCorridorsScraper(BaseScraper):
         return results
 
     def _scrape_detail(self, url: str) -> dict:
-        html = self.fetch_html(url)
+        html = self.fetch_html(url, verify=False)
         soup = BeautifulSoup(html, "html.parser")
 
         title_tag = self._first_match(soup, DETAIL_TITLE_SELECTORS)

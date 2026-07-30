@@ -108,3 +108,61 @@ def match_keywords(text: str, keywords: list[Keyword] | None = None) -> list[Key
         if kw.pattern.search(text):
             matches.append(KeywordMatchResult(keyword=kw.text, category=kw.category))
     return matches
+
+
+def add_keyword(keyword: str, category: str | None = None) -> None:
+    """Append a new keyword row to keywords.csv and clear the in-process cache."""
+    path = Path(settings.keywords_csv_path)
+    if not path.exists():
+        raise FileNotFoundError(f"keywords.csv not found at {path}.")
+
+    # Check for duplicates (case-insensitive)
+    with path.open(newline="", encoding="utf-8") as f:
+        reader = csv.DictReader(f)
+        for row in reader:
+            if (row.get("keyword") or "").strip().lower() == keyword.strip().lower():
+                raise ValueError(f"Keyword '{keyword}' already exists.")
+
+    with path.open("a", newline="", encoding="utf-8") as f:
+        writer = csv.writer(f)
+        writer.writerow([keyword.strip(), (category or "").strip()])
+
+    _cached_keywords.cache_clear()
+    logger.info("keyword_added", extra={"keyword": keyword, "category": category})
+
+
+def delete_keyword(keyword: str) -> bool:
+    """Remove all rows matching the keyword (case-insensitive). Returns True if found & deleted."""
+    path = Path(settings.keywords_csv_path)
+    if not path.exists():
+        raise FileNotFoundError(f"keywords.csv not found at {path}.")
+
+    with path.open(newline="", encoding="utf-8") as f:
+        reader = csv.DictReader(f)
+        fieldnames = reader.fieldnames or ["keyword", "category"]
+        rows = list(reader)
+
+    original_count = len(rows)
+    rows = [r for r in rows if (r.get("keyword") or "").strip().lower() != keyword.strip().lower()]
+
+    if len(rows) == original_count:
+        return False  # nothing deleted
+
+    with path.open("w", newline="", encoding="utf-8") as f:
+        writer = csv.DictWriter(f, fieldnames=fieldnames)
+        writer.writeheader()
+        writer.writerows(rows)
+
+    _cached_keywords.cache_clear()
+    logger.info("keyword_deleted", extra={"keyword": keyword})
+    return True
+
+
+def list_keywords_raw() -> list[dict]:
+    """Return all keyword rows from keywords.csv as plain dicts (for the API)."""
+    path = Path(settings.keywords_csv_path)
+    if not path.exists():
+        return []
+    with path.open(newline="", encoding="utf-8") as f:
+        reader = csv.DictReader(f)
+        return [{"keyword": r.get("keyword", "").strip(), "category": r.get("category", "").strip()} for r in reader if r.get("keyword", "").strip()]

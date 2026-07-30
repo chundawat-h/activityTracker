@@ -5,7 +5,9 @@ SQLAlchemy==2.0.35
 python-dotenv==1.0.1
 APScheduler==3.10.4
 composio==0.18.0
-psycopg2-binary==2.9.9
+# psycopg2-binary==2.9.9  # only needed for Postgres in production
+cloudscraper==1.2.71
+fastapi[standard]==0.115.5
 
 # dev / test
 pytest==8.3.3

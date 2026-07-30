@@ -95,3 +95,20 @@ class Settings:
 
 
 settings = Settings()
+
+
+def update_notification_email(new_email: str) -> None:
+    """Persist a new NOTIFICATION_EMAIL_TO value to the .env file.
+
+    Uses python-dotenv's set_key so the value survives process restarts.
+    The in-memory `settings` singleton is NOT mutated; restart the server
+    (or re-create the singleton) to pick up the new value in memory.
+    """
+    from dotenv import set_key  # local import to avoid circular issues
+
+    env_path = BASE_DIR / ".env"
+    set_key(str(env_path), "NOTIFICATION_EMAIL_TO", new_email)
+    # Also update the live env so the current process uses it immediately
+    import os
+    os.environ["NOTIFICATION_EMAIL_TO"] = new_email
+
